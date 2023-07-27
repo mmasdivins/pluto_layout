@@ -11,3 +11,4 @@ export 'pluto_rotate_focused_container_event.dart';
 export 'pluto_rotate_focused_tab_item_event.dart';
 export 'pluto_rotate_tab_view_event.dart';
 export 'pluto_toggle_tab_view_event.dart';
+export 'pluto_items_changed_event.dart';

@@ -210,7 +210,7 @@ class _MenusState extends ConsumerState<_Menus> {
 
     final idx = removeIdx >= items.length ? items.length - 1 : removeIdx;
 
-    toggleTab(items[idx], true, setFocus: false);
+    toggleTab(items[idx], true, setFocus: true);
   }
 
   void _handleRotateFocusedTabItemEvent(PlutoRotateFocusedTabItemEvent event) {

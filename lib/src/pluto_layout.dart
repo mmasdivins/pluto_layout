@@ -154,7 +154,6 @@ class _LayoutWidgetState extends ConsumerState<_LayoutWidget> {
   @override
   void initState() {
     super.initState();
-
     _subscription = widget.eventStreamController.listen(_eventListener);
   }
 

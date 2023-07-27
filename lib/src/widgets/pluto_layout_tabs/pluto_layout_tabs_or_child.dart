@@ -11,6 +11,7 @@ class PlutoLayoutTabsOrChild extends StatelessWidget {
     super.key,
   });
 
+
   final List<PlutoLayoutTabItem>? items;
 
   final bool draggable;
@@ -19,6 +20,10 @@ class PlutoLayoutTabsOrChild extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    final PlutoLayoutEventStreamController? eventStreamController =
+    PlutoLayout.getEventStreamController(context);
+
     return ProviderScope(
       overrides: [
         _itemsProvider.overrideWith(
@@ -28,6 +33,11 @@ class PlutoLayoutTabsOrChild extends StatelessWidget {
       child: Consumer(
         builder: (innerContext, ref, innerChild) {
           final items = ref.watch(_itemsProvider);
+
+          eventStreamController?.add(
+            PlutoItemsChangedEvent(
+              items: items,
+          ));
 
           final hasItems = items.isNotEmpty;
 
