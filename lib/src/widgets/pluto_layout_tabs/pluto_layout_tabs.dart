@@ -24,6 +24,7 @@ part '_tab_view.dart';
 part 'pluto_layout_tab_item.dart';
 part 'pluto_layout_tab_item_size_resolver.dart';
 part 'pluto_layout_tabs_or_child.dart';
+part 'mixin_tab.dart';
 
 final _focusedItemIdViewProvider = StateProvider<Object?>((ref) => null);
 

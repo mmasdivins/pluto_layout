@@ -52,9 +52,21 @@ class _ItemsNotifier extends StateNotifier<List<PlutoLayoutTabItem>> {
   }
 
   void remove(Object id) {
+    MixinTab? tab;
+    for (final e in state) {
+      if (id == e.id) {
+        if (e.tabViewWidget?.key is GlobalKey) {
+          var gkey = e.tabViewWidget?.key as GlobalKey;
+          var newState = gkey.currentState;
+          if (newState is MixinTab) {
+            tab = newState as MixinTab;
+          }
+        }
+      }
+    }
     state = [
       for (final e in state)
-        if (id != e.id) e,
+        if (id != e.id || (id == e.id && tab != null && !tab.onClose())) e,
     ];
   }
 }
