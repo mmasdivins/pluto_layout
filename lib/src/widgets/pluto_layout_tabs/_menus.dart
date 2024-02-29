@@ -1,6 +1,7 @@
 part of pluto_layout_tabs;
 
 final _draggingTabMenu = StateProvider<_DragData?>((ref) => null);
+final draggingStateProvider = StateProvider<DragData?>((ref) => null);
 
 class _Menus extends ConsumerStatefulWidget {
   const _Menus({
@@ -421,6 +422,18 @@ class _MenuContainer extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
 
+    Color tabColor = theme.colorScheme.secondary;
+    Color tabDisabledColor = theme.disabledColor;
+    TextStyle? titleStyle;
+
+    final layoutThemeData = ref.read(layoutThemeProvider);
+
+    if (layoutThemeData != null) {
+      tabColor = layoutThemeData.tabColor ?? tabColor;
+      tabDisabledColor = layoutThemeData.tabDisabledColor ?? tabDisabledColor;
+      titleStyle = layoutThemeData.tabTextStyle;
+    }
+
     return DecoratedBox(
       key: const ValueKey('_MenuContainer_DecoratedBox'),
       decoration: BoxDecoration(
@@ -430,17 +443,20 @@ class _MenuContainer extends ConsumerWidget {
             layoutId: layoutId,
             itemId: item.id,
           )
-              ? BorderSide(width: 3, color: theme.colorScheme.secondary)
+              ? BorderSide(width: 3, color: tabColor)
               : BorderSide.none,
         ),
       ),
       child: ToggleButton(
         title: item.title,
         icon: item.icon,
+        titleStyle: titleStyle,
+        color: layoutThemeData != null ? tabColor : null,
+        disabledColor: layoutThemeData != null ? tabDisabledColor : null,
         trailing: item.showRemoveButton
             ? IconButton(
                 iconSize: 14,
-                color: theme.disabledColor,
+                color: tabDisabledColor,
                 onPressed: () {
                   ref
                       .read(layoutEventsProvider)
@@ -526,10 +542,27 @@ class _Draggable extends ConsumerWidget {
     BuildContext context,
     List<_DragData?> candidateData,
     List<dynamic> rejectedData,
+    WidgetRef ref,
   ) {
+
+    final theme = Theme.of(context);
+
+    Color tabColor = theme.colorScheme.secondary;
+    Color dividerColor = theme.dividerColor;
+    Color tabDisabledColor = theme.disabledColor;
+    Color tabBackgroundColor = theme.colorScheme.background;
+
+    final layoutThemeData = ref.read(layoutThemeProvider);
+    if (layoutThemeData != null) {
+      dividerColor = layoutThemeData.dividerColor ?? dividerColor;
+      tabColor = layoutThemeData.tabColor ?? tabColor;
+      tabDisabledColor = layoutThemeData.tabDisabledColor ?? tabDisabledColor;
+      tabBackgroundColor = layoutThemeData.tabBackgroundColor ?? tabBackgroundColor;
+    }
+
     if (candidateData.isNotEmpty || rejectedData.isNotEmpty) {
       return ColoredBox(
-        color: Theme.of(context).colorScheme.background,
+        color: tabBackgroundColor,
         child: child,
       );
     }
@@ -538,17 +571,16 @@ class _Draggable extends ConsumerWidget {
       return KeyedSubtree(key: item._menuKey, child: child);
     }
 
-    final theme = Theme.of(context);
 
     final border = items.where(_TabsHelper.isEnabled).isEmpty
-        ? BorderSide(color: theme.dividerColor)
+        ? BorderSide(color: dividerColor)
         : BorderSide.none;
 
     return DecoratedBox(
       key: ValueKey('_DraggableDragging_${layoutId.name}'),
       position: DecorationPosition.foreground,
       decoration: BoxDecoration(
-        color: Theme.of(context).dialogBackgroundColor,
+        color: tabBackgroundColor,//Theme.of(context).dialogBackgroundColor,
         border: Border(
           top: layoutId.isBottom ? border : BorderSide.none,
           bottom: layoutId.isBottom ? BorderSide.none : border,
@@ -565,9 +597,18 @@ class _Draggable extends ConsumerWidget {
     return Draggable<_DragData>(
       data: data,
       dragAnchorStrategy: _childDragAnchorStrategy(direction),
-      onDragStarted: () => ref.read(_draggingTabMenu.notifier).state = data,
-      onDragEnd: (_) => ref.read(_draggingTabMenu.notifier).state = null,
+      onDragStarted: () {
+        ref.read(_draggingTabMenu.notifier).state = data;
+        ref.read(draggingStateProvider.notifier).state = DragData(layoutId, item);
+      },
+      onDragEnd: (_) {
+        ref.read(_draggingTabMenu.notifier).state = null;
+        ref.read(draggingStateProvider.notifier).state = null;
+      },
       feedback: ProviderScope(
+        overrides: [
+          layoutThemeProvider.overrideWithValue(ref.read(layoutThemeProvider)),
+        ],
         child: Material(
           child: RotatedBox(quarterTurns: quarterTurns, child: child),
         ),
@@ -575,7 +616,7 @@ class _Draggable extends ConsumerWidget {
       child: DragTarget<_DragData>(
         onWillAccept: _onWillAccept,
         onAccept: _onAccept(ref),
-        builder: _builder,
+        builder: (context, data, builder) => _builder(context, data, builder, ref),
       ),
     );
   }
@@ -583,6 +624,15 @@ class _Draggable extends ConsumerWidget {
 
 class _DragData {
   const _DragData(this.layoutId, this.item);
+
+  final PlutoLayoutId layoutId;
+
+  final PlutoLayoutTabItem item;
+}
+
+
+class DragData {
+  const DragData(this.layoutId, this.item);
 
   final PlutoLayoutId layoutId;
 

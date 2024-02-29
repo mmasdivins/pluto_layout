@@ -25,6 +25,7 @@ class PlutoLayout extends StatefulWidget {
     this.bottom,
     required this.body,
     this.shortcuts,
+    this.plutoLayoutTheme,
     super.key,
   });
 
@@ -42,6 +43,9 @@ class PlutoLayout extends StatefulWidget {
 
   /// This is the basic body screen.
   final PlutoLayoutContainer body;
+
+  /// Create a ThemeData that's used to configure a Theme.
+  final PlutoLayoutThemeData? plutoLayoutTheme;
 
   /// Specific actions by user registration shortcut keys
   ///
@@ -98,6 +102,7 @@ class _PlutoLayoutState extends State<PlutoLayout> {
     Widget layoutWidget = ProviderScope(
       overrides: [
         layoutShortcutsProvider.overrideWithValue(widget.shortcuts),
+        layoutThemeProvider.overrideWithValue(widget.plutoLayoutTheme),
         layoutEventsProvider.overrideWithValue(_eventStreamController),
       ],
       child: _LayoutWidget(
@@ -204,56 +209,162 @@ class _LayoutWidgetState extends ConsumerState<_LayoutWidget> {
     final layoutData = ref.read(layoutDataProvider);
 
     final frontId = ref.watch(focusedLayoutIdProvider);
-
-    return CustomMultiChildLayout(
-      delegate: _PlutoLayoutDelegate(layoutData, widget.eventStreamController),
-      children: <LayoutId>[
-        LayoutId(
-          id: PlutoLayoutId.body,
-          child: _LayoutIdProviderScope(
-            id: PlutoLayoutId.body,
-            child: widget.body,
-          ),
+    final dragging = ref.watch(draggingStateProvider);
+    return Stack(
+      children: [
+        CustomMultiChildLayout(
+          delegate: _PlutoLayoutDelegate(layoutData, widget.eventStreamController),
+          children: <LayoutId>[
+            LayoutId(
+              id: PlutoLayoutId.body,
+              child: _LayoutIdProviderScope(
+                id: PlutoLayoutId.body,
+                child: widget.body,
+              ),
+            ),
+            if (widget.right != null)
+              LayoutId(
+                id: PlutoLayoutId.right,
+                child: _LayoutIdProviderScope(
+                  id: PlutoLayoutId.right,
+                  child: widget.right!,
+                ),
+              ),
+            if (widget.left != null)
+              LayoutId(
+                id: PlutoLayoutId.left,
+                child: _LayoutIdProviderScope(
+                  id: PlutoLayoutId.left,
+                  child: widget.left!,
+                ),
+              ),
+            if (widget.bottom != null)
+              LayoutId(
+                id: PlutoLayoutId.bottom,
+                child: _LayoutIdProviderScope(
+                  id: PlutoLayoutId.bottom,
+                  child: widget.bottom!,
+                ),
+              ),
+            if (widget.top != null)
+              LayoutId(
+                id: PlutoLayoutId.top,
+                child: _LayoutIdProviderScope(
+                  id: PlutoLayoutId.top,
+                  child: widget.top!,
+                ),
+              ),
+          ]..sort((a, b) => a.id == frontId ? 1 : -1),
         ),
-        if (widget.right != null)
-          LayoutId(
-            id: PlutoLayoutId.right,
-            child: _LayoutIdProviderScope(
-              id: PlutoLayoutId.right,
-              child: widget.right!,
-            ),
-          ),
-        if (widget.left != null)
-          LayoutId(
-            id: PlutoLayoutId.left,
-            child: _LayoutIdProviderScope(
-              id: PlutoLayoutId.left,
-              child: widget.left!,
-            ),
-          ),
-        if (widget.bottom != null)
-          LayoutId(
-            id: PlutoLayoutId.bottom,
-            child: _LayoutIdProviderScope(
-              id: PlutoLayoutId.bottom,
-              child: widget.bottom!,
-            ),
-          ),
-        if (widget.top != null)
-          LayoutId(
-            id: PlutoLayoutId.top,
-            child: _LayoutIdProviderScope(
-              id: PlutoLayoutId.top,
-              child: widget.top!,
-            ),
-          ),
-      ]..sort((a, b) => a.id == frontId ? 1 : -1),
+        // if (dragging != null)
+        //   Container(
+        //     alignment: Alignment.center,
+        //     child: SizedBox(
+        //       width: 200,
+        //       height: 200,
+        //       child: Stack(
+        //         children: [
+        //           // TOP
+        //           Positioned(
+        //               left: 75,
+        //               top: 0,
+        //               width: 50,
+        //               height: 50,
+        //               child: DragTarget(
+        //                 onAccept: (data) {
+        //                   int br = 0;
+        //                 },
+        //                 builder: (context, accepted, rejected) {
+        //                   return  Container(
+        //                     color: Colors.deepPurple,
+        //                   );
+        //                 },
+        //               )
+        //           ),
+        //
+        //           // LEFT
+        //           Positioned(
+        //             left: 0,
+        //             top: 75,
+        //             width: 50,
+        //             height: 50,
+        //             child: DragTarget(
+        //               onAccept: (data) {
+        //                 int br = 0;
+        //               },
+        //               builder: (context, accepted, rejected) {
+        //                 return  Container(
+        //                   color: Colors.red,
+        //                 );
+        //               },
+        //             )
+        //           ),
+        //
+        //           // CENTER
+        //           Positioned(
+        //               left: 75,
+        //               top: 75,
+        //               width: 50,
+        //               height: 50,
+        //               child: DragTarget(
+        //                 onAccept: (data) {
+        //                   int br = 0;
+        //                 },
+        //                 builder: (context, accepted, rejected) {
+        //                   return  Container(
+        //                     color: Colors.blue,
+        //                   );
+        //                 },
+        //               )
+        //           ),
+        //
+        //           // RIGHT
+        //           Positioned(
+        //               right: 0,
+        //               top: 75,
+        //               width: 50,
+        //               height: 50,
+        //               child: DragTarget(
+        //                 onAccept: (data) {
+        //                   int br = 0;
+        //                 },
+        //                 builder: (context, accepted, rejected) {
+        //                   return  Container(
+        //                     color: Colors.yellow,
+        //                   );
+        //                 },
+        //               )
+        //           ),
+        //
+        //           // BOTTOM
+        //           Positioned(
+        //               left: 75,
+        //               bottom: 0,
+        //               width: 50,
+        //               height: 50,
+        //               child: DragTarget(
+        //                 onAccept: (data) {
+        //                   int br = 0;
+        //                 },
+        //                 builder: (context, accepted, rejected) {
+        //                   return  Container(
+        //                     color: Colors.green,
+        //                   );
+        //                 },
+        //               )
+        //           ),
+        //
+        //         ],
+        //       ),
+        //     ),
+        //   ),
+      ],
     );
   }
 }
 
 class _PlutoLayoutDelegate extends MultiChildLayoutDelegate {
-  _PlutoLayoutDelegate(this._size, this._events);
+  _PlutoLayoutDelegate(this._size, this._events,);
 
   final PlutoLayoutData _size;
 
@@ -261,6 +372,7 @@ class _PlutoLayoutDelegate extends MultiChildLayoutDelegate {
 
   @override
   void performLayout(Size size) {
+
     _relayoutEvent(size);
 
     _size.size = size;

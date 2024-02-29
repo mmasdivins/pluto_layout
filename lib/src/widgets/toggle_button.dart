@@ -7,12 +7,21 @@ class ToggleButton extends StatelessWidget {
     this.icon,
     this.trailing,
     this.changed,
+    this.color,
+    this.disabledColor,
+    this.titleStyle,
     super.key,
   });
 
   final String title;
 
   final bool enabled;
+
+  final Color? color;
+
+  final Color? disabledColor;
+
+  final TextStyle? titleStyle;
 
   final Widget? icon;
 
@@ -30,13 +39,14 @@ class ToggleButton extends StatelessWidget {
 
     final style = TextButton.styleFrom(
       foregroundColor:
-          enabled ? theme.colorScheme.secondary : theme.disabledColor,
+          enabled ? (color ?? theme.colorScheme.secondary) : (disabledColor ?? theme.disabledColor),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.zero,
       ),
+      textStyle: titleStyle?.copyWith(color: enabled ? (color ?? theme.colorScheme.primary) : (disabledColor ?? theme.disabledColor)),
     );
 
-    Widget label = Text(title);
+    Widget label = Text(title, style: titleStyle?.copyWith(color: enabled ? (color ?? theme.colorScheme.primary) : (disabledColor ?? theme.disabledColor)),);
 
     if (trailing != null) {
       label = Row(children: [label, trailing!]);

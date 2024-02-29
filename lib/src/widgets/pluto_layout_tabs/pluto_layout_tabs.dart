@@ -155,7 +155,14 @@ class PlutoLayoutTabs extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
 
-    final border = BorderSide(color: theme.dividerColor);
+    var dividerColor = theme.dividerColor;
+
+    final layoutThemeData = ref.read(layoutThemeProvider);
+    if (layoutThemeData != null && layoutThemeData.dividerColor != null) {
+      dividerColor = layoutThemeData.dividerColor!;
+    }
+
+    final border = BorderSide(color: dividerColor);
 
     final containerDirection = ref.read(layoutContainerDirectionProvider);
 
